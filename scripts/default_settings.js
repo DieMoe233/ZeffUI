@@ -10,22 +10,7 @@ function checkAndInitializeSetting(settingsObject, setting, defaultValue) {
 // Gets the set language in FFXIV Plugin Settings
 async function getACTLocale() {
     let lang = await callOverlayHandler({ call: "getLanguage" });
-    switch (lang.language) {
-        case "English":
-            return "en";
-        case "German":
-            return "de";
-        case "French":
-            return "fr";
-        case "Japanese":
-            return "jp";
-        case "Chinese":
-            return "cn";
-        case "Korean":
-            return "kr";
-        case "default":
-            return "en";
-    }
+        return "cn";
 }
 
 /* exported checkAndInitializeDefaultSettingsObject */
@@ -58,7 +43,7 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     checkAndInitializeSetting(settings, "skin", "default");
 
     // FONT SETTINGS
-    checkAndInitializeSetting(settings, "font", "Arial");
+    checkAndInitializeSetting(settings, "font", "黑体");
     checkAndInitializeSetting(settings, "customfonts", []);
 
     // DEBUG SETTINGS
@@ -120,7 +105,7 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     checkAndInitializeSetting(settings.healthbar, "x", 30);
     checkAndInitializeSetting(settings.healthbar, "y", 216);
     checkAndInitializeSetting(settings.healthbar, "align", "left");
-    checkAndInitializeSetting(settings.healthbar, "font", "Arial");
+    checkAndInitializeSetting(settings.healthbar, "font", "黑体");
     checkAndInitializeSetting(settings.healthbar, "fontxoffset", 0);
     checkAndInitializeSetting(settings.healthbar, "fontyoffset", 0);
     checkAndInitializeSetting(settings.healthbar, "staticfontsize", false);
@@ -138,7 +123,7 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     checkAndInitializeSetting(settings.manabar, "x", 30);
     checkAndInitializeSetting(settings.manabar, "y", 232);
     checkAndInitializeSetting(settings.manabar, "align", "left");
-    checkAndInitializeSetting(settings.manabar, "font", "Arial");
+    checkAndInitializeSetting(settings.manabar, "font", "黑体");
     checkAndInitializeSetting(settings.manabar, "fontxoffset", 0);
     checkAndInitializeSetting(settings.manabar, "fontyoffset", 0);
     checkAndInitializeSetting(settings.manabar, "staticfontsize", false);
@@ -219,7 +204,7 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     checkAndInitializeSetting(settings.timerbar, "rotation", 0);
     checkAndInitializeSetting(settings.timerbar, "x", 30);
     checkAndInitializeSetting(settings.timerbar, "y", 200);
-    checkAndInitializeSetting(settings.timerbar, "font", "Arial");
+    checkAndInitializeSetting(settings.timerbar, "font", "黑体");
     checkAndInitializeSetting(settings.timerbar, "fontxoffset", 0);
     checkAndInitializeSetting(settings.timerbar, "fontyoffset", 0);
     checkAndInitializeSetting(settings.timerbar, "staticfontsize", false);
@@ -244,7 +229,7 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     checkAndInitializeSetting(settings.dottimerbar, "rotation", 0);
     checkAndInitializeSetting(settings.dottimerbar, "x", 30);
     checkAndInitializeSetting(settings.dottimerbar, "y", 50);
-    checkAndInitializeSetting(settings.dottimerbar, "font", "Arial");
+    checkAndInitializeSetting(settings.dottimerbar, "font", "黑体");
     checkAndInitializeSetting(settings.dottimerbar, "fontxoffset", 0);
     checkAndInitializeSetting(settings.dottimerbar, "fontyoffset", 0);
     checkAndInitializeSetting(settings.dottimerbar, "staticfontsize", false);
@@ -268,7 +253,7 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     checkAndInitializeSetting(settings.bufftimerbar, "rotation", 0);
     checkAndInitializeSetting(settings.bufftimerbar, "x", 30);
     checkAndInitializeSetting(settings.bufftimerbar, "y", 100);
-    checkAndInitializeSetting(settings.bufftimerbar, "font", "Arial");
+    checkAndInitializeSetting(settings.bufftimerbar, "font", "黑体");
     checkAndInitializeSetting(settings.bufftimerbar, "fontxoffset", 0);
     checkAndInitializeSetting(settings.bufftimerbar, "fontyoffset", 0);
     checkAndInitializeSetting(settings.bufftimerbar, "staticfontsize", false);
@@ -301,7 +286,7 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     checkAndInitializeSetting(settings.raidbuffs, "columns", 8);
     checkAndInitializeSetting(settings.raidbuffs, "x", 30);
     checkAndInitializeSetting(settings.raidbuffs, "y", 240);
-    checkAndInitializeSetting(settings.raidbuffs, "font", "Arial");
+    checkAndInitializeSetting(settings.raidbuffs, "font", "黑体");
     checkAndInitializeSetting(settings.raidbuffs, "fontxoffset", 0);
     checkAndInitializeSetting(settings.raidbuffs, "fontyoffset", 0);
     checkAndInitializeSetting(settings.raidbuffs, "staticfontsize", false);
@@ -336,7 +321,7 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     checkAndInitializeSetting(settings.mitigation, "columns", 8);
     checkAndInitializeSetting(settings.mitigation, "x", 30);
     checkAndInitializeSetting(settings.mitigation, "y", 280);
-    checkAndInitializeSetting(settings.mitigation, "font", "Arial");
+    checkAndInitializeSetting(settings.mitigation, "font", "黑体");
     checkAndInitializeSetting(settings.mitigation, "fontxoffset", 0);
     checkAndInitializeSetting(settings.mitigation, "fontyoffset", 0);
     checkAndInitializeSetting(settings.mitigation, "staticfontsize", false);
@@ -370,7 +355,7 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     checkAndInitializeSetting(settings.party, "scale", 0.8);
     checkAndInitializeSetting(settings.party, "x", 30);
     checkAndInitializeSetting(settings.party, "y", 320);
-    checkAndInitializeSetting(settings.party, "font", "Arial");
+    checkAndInitializeSetting(settings.party, "font", "黑体");
     checkAndInitializeSetting(settings.party, "fontxoffset", 0);
     checkAndInitializeSetting(settings.party, "fontyoffset", 0);
     checkAndInitializeSetting(settings.party, "staticfontsize", false);
@@ -406,7 +391,7 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     checkAndInitializeSetting(settings.customcd, "columns", 8);
     checkAndInitializeSetting(settings.customcd, "x", 30);
     checkAndInitializeSetting(settings.customcd, "y", 320);
-    checkAndInitializeSetting(settings.customcd, "font", "Arial");
+    checkAndInitializeSetting(settings.customcd, "font", "黑体");
     checkAndInitializeSetting(settings.customcd, "fontxoffset", 0);
     checkAndInitializeSetting(settings.customcd, "fontyoffset", 0);
     checkAndInitializeSetting(settings.customcd, "staticfontsize", false);
