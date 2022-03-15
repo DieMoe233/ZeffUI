@@ -143,6 +143,7 @@ var language = [
 	{ id: "linkall", string: "Link to all" },
 	{ id: "unlink", string: "Unlink" },
 	{ id: "includeprofiles", string: "Include profiles" },
+	{ id: "preventdoubletts", string: "Prevent Double TTS Callouts" },
 	// SKINS
 	{ id: "skindefault", string: "기본 (by Square Enix)" },
 	{ id: "skinmaterialdark", string: "Material Dark (by skotlex)" },
@@ -176,6 +177,7 @@ var language = [
 	{ id: "cnj", string: "환술사" },
 	{ id: "sch", string: "학자" },
 	{ id: "ast", string: "점성술사" },
+	{ id: "sge", string: "Sage" },
 	{ id: "mnk", string: "몽크" },
 	{ id: "pgl", string: "격투사" },
 	{ id: "drg", string: "용기사" },
@@ -183,6 +185,7 @@ var language = [
 	{ id: "nin", string: "닌자" },
 	{ id: "rog", string: "쌍검사" },
 	{ id: "sam", string: "사무라이" },
+	{ id: "rpr", string: "Reaper" },
 	{ id: "brd", string: "음유시인" },
 	{ id: "arc", string: "궁술사" },
 	{ id: "mch", string: "기공사" },

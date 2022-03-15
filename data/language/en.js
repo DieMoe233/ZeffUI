@@ -143,6 +143,7 @@ var language = [
 	{ id: "linkall", string: "Link to all" },
 	{ id: "unlink", string: "Unlink" },
 	{ id: "includeprofiles", string: "Include profiles" },
+	{ id: "preventdoubletts", string: "Prevent Double TTS Callouts" },
 	// SKINS
 	{ id: "skindefault", string: "Default (by Square Enix)" },
 	{ id: "skinmaterialdark", string: "Material Dark (by skotlex)" },
@@ -176,6 +177,7 @@ var language = [
 	{ id: "cnj", string: "Conjurer" },
 	{ id: "sch", string: "Scholar" },
 	{ id: "ast", string: "Astrologian" },
+	{ id: "sge", string: "Sage" },
 	{ id: "mnk", string: "Monk" },
 	{ id: "pgl", string: "Pugilist" },
 	{ id: "drg", string: "Dragoon" },
@@ -183,6 +185,7 @@ var language = [
 	{ id: "nin", string: "Ninja" },
 	{ id: "rog", string: "Rogue" },
 	{ id: "sam", string: "Samurai" },
+	{ id: "rpr", string: "Reaper" },
 	{ id: "brd", string: "Bard" },
 	{ id: "arc", string: "Archer" },
 	{ id: "mch", string: "Machinist" },

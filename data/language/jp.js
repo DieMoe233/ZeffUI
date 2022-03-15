@@ -143,6 +143,7 @@ var language = [
 	{ id: "linkall", string: "Link to all" },
 	{ id: "unlink", string: "Unlink" },
 	{ id: "includeprofiles", string: "Include profiles" },
+	{ id: "preventdoubletts", string: "Prevent Double TTS Callouts" },
 	// SKINS
 	{ id: "skindefault", string: "Default (by Square Enix)" },
 	{ id: "skinmaterialdark", string: "Material Dark (by skotlex)" },
@@ -176,6 +177,7 @@ var language = [
 	{ id: "cnj", string: "幻術士" },
 	{ id: "sch", string: "学者" },
 	{ id: "ast", string: "占星術師" },
+	{ id: "sge", string: "Sage" },
 	{ id: "mnk", string: "モンク" },
 	{ id: "pgl", string: "格闘士" },
 	{ id: "drg", string: "竜騎士" },
@@ -183,6 +185,7 @@ var language = [
 	{ id: "nin", string: "忍者" },
 	{ id: "rog", string: "双剣士" },
 	{ id: "sam", string: "侍" },
+	{ id: "rpr", string: "Reaper" },
 	{ id: "brd", string: "吟遊詩人" },
 	{ id: "arc", string: "弓術士" },
 	{ id: "mch", string: "機工士" },

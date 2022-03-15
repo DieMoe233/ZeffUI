@@ -23,6 +23,7 @@ let gameState = {
     player: null,
     playerPrevious: null,
     playerTags: {},
+    playerPets: [],
     currentrole: null,
     zone: {},
     partyList: [],
@@ -48,6 +49,7 @@ let activeElements = {
     currentCharges: new Map(),
     tts: new Map(),
     ttsElements: new Map(),
+    ttsLastCalled: new Map(),
 };
 
 /* prettier-ignore */
@@ -73,7 +75,8 @@ const GAME_DATA = {
 			[41, 253], [42, 263], [43, 272], [44, 283], [45, 292], [46, 302], [47, 311], [48, 322], [49, 331], [50, 341], 
 			[51, 342], [52, 344], [53, 345], [54, 346], [55, 347], [56, 349], [57, 350], [58, 351], [59, 352], [60, 354], 
 			[61, 355], [62, 356], [63, 357], [64, 358], [65, 359], [66, 360], [67, 361], [68, 362], [69, 363], [70, 364], 
-			[71, 365], [72, 366], [73, 367], [74, 368], [75, 370], [76, 372], [77, 374], [78, 376], [79, 378], [80, 380]
+			[71, 365], [72, 366], [73, 367], [74, 368], [75, 370], [76, 372], [77, 374], [78, 376], [79, 378], [80, 380], 
+			[81, 382], [82, 384], [83, 386], [84, 388], [85, 390], [86, 392], [87, 394], [88, 396], [89, 398], [90, 400]
 		]),
 	ZONE_INFO: []
 };
@@ -100,6 +103,14 @@ async function startZeffUI() {
     await loadSettings();
     generateJobStacks();
     toggleHideOutOfCombatElements();
+    waitFor("language", function () {
+        if (gameState.player === null) {
+            window
+                .callOverlayHandler({ call: "getCombatants" })
+                .then((e) => getPlayerChangedEventFromCombatants(e));
+        }
+    });
+
     console.log("ZeffUI fully loaded.");
 }
 
@@ -162,6 +173,7 @@ async function loadSettings() {
             settings = JSON.parse(
                 JSON.stringify(profiles.profiles[profiles.currentprofile]),
             );
+            settings = await checkAndInitializeDefaultSettingsObject(settings);
             settings.profiles = profiles;
         }
     }
@@ -409,7 +421,6 @@ function setLoadedElements() {
 
     // STACKBAR SETTINGS
     let stacksbar = document.getElementById("stacks-bar");
-    stacksbar.style.display = settings.stacksbar.enabled ? "block" : "none";
 
     stacksbar.style.width = settings.stacksbar.scale * (4 * 25);
     stacksbar.style.height = settings.stacksbar.scale * 21;
@@ -431,6 +442,10 @@ function setLoadedElements() {
 
     stacksbar.classList.add("ltr");
     stacksbar.style.transform = `translate(${settings.stacksbar.x}px, ${settings.stacksbar.y}px) scale(${settings.stacksbar.scale})`;
+
+    stacksbar.style.display = settings.stacksbar.enabled
+        ? "block !important"
+        : "none !important";
 
     // RAIDBUFF SETTINGS
     let raidbuffs = document.getElementById("raid-buffs-bar");
@@ -919,6 +934,15 @@ function drawGrid() {
 
     canvasContext.strokeStyle = "black";
     canvasContext.stroke();
+}
+
+function waitFor(variable, callback) {
+    var interval = setInterval(function () {
+        if (window[variable]) {
+            clearInterval(interval);
+            callback();
+        }
+    }, 200);
 }
 
 function clearGrid() {
@@ -1836,6 +1860,20 @@ function generateRawPartyList(fromCombatants, combatants = null) {
     ];
 }
 
+function extractPlayerPets(combatants) {
+    gameState.playerPets = [];
+    for (let combatant of combatants) {
+        let ownerId = parseInt(combatant.OwnerID).toString(16).toUpperCase();
+        if (gameState.partyList.filter((x) => x.id == ownerId).length > 0) {
+            addPlayerPet({
+                name: combatant.Name,
+                id: parseInt(combatant.ID).toString(16).toUpperCase(),
+                ownerId: ownerId,
+            });
+        }
+    }
+}
+
 // Generate partylist with extra metadata (for example player jobs and what type the job is)
 function generatePartyList(party) {
     toLog(["[GeneratePartyList] RawPartyList:", party]);
@@ -1849,6 +1887,8 @@ function generatePartyList(party) {
                 partyMember.name !== gameState.player.name
             )
         ) {
+            if (partyMember.level == undefined)
+                partyMember.level = gameState.player.level;
             gameState.partyList.push({
                 id: partyMember.id,
                 inParty: partyMember.inParty,
@@ -1884,8 +1924,13 @@ function checkForParty(e) {
     let combatants = e.combatants;
     if (combatants === undefined || gameState.player === undefined) return;
     let player = combatants.find((x) => x.ID === gameState.player.id);
-    let partyList = generateRawPartyList(player.PartyType !== 0, combatants);
+    let hasCombatants = false;
+    if (Object.prototype.hasOwnProperty.call(player, "PartyType")) {
+        hasCombatants = player.PartyType !== 0;
+    }
+    let partyList = generateRawPartyList(hasCombatants, combatants);
     generatePartyList(partyList);
+    extractPlayerPets(combatants);
     reloadCooldownModules();
 }
 
@@ -1998,17 +2043,25 @@ function startAbilityIconTimers(
                 `${selector}-overlay`,
             ).src = `skins/${currentSettings.skin}/images/icon-overlay.png`;
 
-        document.getElementById(`${selector}-active`).style.display = "block";
-        document.getElementById(`${selector}-duration`).style.display = "block";
-        document.getElementById(`${selector}-duration`).textContent =
-            ability.duration;
+        if (document.getElementById(`${selector}-active`))
+            document.getElementById(`${selector}-active`).style.display =
+                "block";
+        if (document.getElementById(`${selector}-duration`)) {
+            document.getElementById(`${selector}-duration`).style.display =
+                "block";
+            document.getElementById(`${selector}-duration`).textContent =
+                ability.duration;
+        }
+
         if (document.getElementById(`${selector}-cooldown`))
             document.getElementById(`${selector}-cooldown`).style.display =
                 "none";
 
         if (usingAbilityHolder) {
             let previousIcon = `${abilityHolder.icon}`;
-            document.getElementById(`${selector}-image`).src = ability.icon;
+            if (document.getElementById(`${selector}-image`)) {
+                document.getElementById(`${selector}-image`).src = ability.icon;
+            }
             startAbilityTimer(
                 ability.duration,
                 `${selector}-duration`,
@@ -2286,12 +2339,13 @@ function startAbilityTimer(
     let timems = duration * 1000;
 
     let abilityElement = document.getElementById(selector);
-    abilityElement.textContent = duration;
+    if (abilityElement) abilityElement.textContent = duration;
 
     let timeLeft = timems;
     let countdownTimer = setInterval(function () {
         timeLeft -= UPDATE_INTERVAL;
-        abilityElement.textContent = (timeLeft / 1000).toFixed(0);
+        if (abilityElement)
+            abilityElement.textContent = (timeLeft / 1000).toFixed(0);
         if (timeLeft <= 0) {
             clearInterval(countdownTimer);
             setTimeout(function () {
@@ -2516,6 +2570,18 @@ function startTTSTimer(
     let ttsTimer = setInterval(function () {
         timeLeft -= UPDATE_INTERVAL;
         if (timeLeft <= timeWhen) {
+            if (currentSettings.general.preventdoubletts) {
+                if (activeElements.ttsLastCalled.has(selector)) {
+                    if (
+                        Date.now() <
+                        activeElements.ttsLastCalled.get(selector) + 2000
+                    ) {
+                        clearInterval(ttsTimer);
+                        return;
+                    }
+                }
+            }
+            activeElements.ttsLastCalled.set(selector, Date.now());
             currentSettings.general.usewebtts
                 ? activeElements.ttsElements[selector].play()
                 : callOverlayHandler({ call: "cactbotSay", text: text });
@@ -2528,6 +2594,9 @@ function startTTSTimer(
 
 // Set up event for when TTS needs to occur for certain abilities
 function handleAbilityTTS(ability, selector, onYou = true) {
+    toLog([
+        `[HandleAbilityTTS] Ability: ${ability} Selector: ${selector} OnYou: ${onYou}`,
+    ]);
     if (activeElements.tts.has(selector))
         clearInterval(activeElements.tts.get(selector));
     switch (ability.type) {
@@ -2552,7 +2621,6 @@ function handleAbilityTTS(ability, selector, onYou = true) {
         default:
             break;
     }
-
     let name = ability.name;
     switch (currentSettings.language) {
         case "en":
@@ -2577,7 +2645,7 @@ function handleAbilityTTS(ability, selector, onYou = true) {
             break;
     }
     if (ability.tts) {
-        switch (ability.ttstype) {
+        switch (parseInt(ability.ttstype)) {
             case 0:
                 startTTSTimer(ability.cooldown, selector, name);
                 break;
@@ -2629,9 +2697,10 @@ function setWebTTS(text) {
 }
 
 // Sets Party Role based on current job
-function setCurrentRole() {
+function setCurrentRole(job) {
+    if (job === null) return;
     gameState.currentrole = jobList
-        .find((x) => x.name === gameState.player.job)
+        .find((x) => x.name === job)
         .type.toLowerCase();
     if (gameState.currentrole.includes("dps")) gameState.currentrole = "dps";
     if (
@@ -2770,9 +2839,17 @@ function onJobChange(job) {
     if (job === "SMN") {
         initializeSmn();
         adjustJobStacks(gameState.stats.stacks, gameState.stats.maxStacks);
-        document.getElementById("stacks-bar").style.display = "block";
+        if (currentSettings.stacksbar.enabled) {
+            document.getElementById("stacks-bar").style.display = "block";
+        } else {
+            document.getElementById("stacks-bar").style.display = "none";
+        }
     } else {
-        document.getElementById("stacks-bar").style.display = "none";
+        if (currentSettings.stacksbar.enabled) {
+            document.getElementById("stacks-bar").style.display = "block";
+        } else {
+            document.getElementById("stacks-bar").style.display = "none";
+        }
     }
     resetTimers();
     if (gameState.partyList.length === 1) {
@@ -2800,11 +2877,46 @@ function onPartyWipe() {
     reloadCooldownModules();
 }
 
+function getPlayerChangedEventFromCombatants(details) {
+    if (details.length === 0) return;
+    if (details.combatants.length === 0) return;
+
+    let player = details.combatants[0];
+    let job = jobList.find((x) => x.id === player.Job).name;
+    let e = {
+        detail: {
+            currentCP: player.CurrentMP,
+            currentGP: player.CurrentMP,
+            currentHP: player.CurrentHP,
+            currentMP: player.CurrentMP,
+            currentShield: 0,
+            currentTP: 0,
+            debugJob: null,
+            id: player.ID,
+            job: job,
+            jobDetail: null,
+            level: player.Level,
+            maxCP: player.MaxMP,
+            maxGP: player.MaxMP,
+            maxHP: player.MaxHP,
+            maxMP: player.MaxMP,
+            name: player.Name,
+            pos: {
+                x: player.PosX,
+                y: player.PosY,
+                z: player.PosZ,
+            },
+        },
+    };
+    onPlayerChangedEvent(e);
+}
+
 // When any change occurs to the player/players resources, mostly used for HP/MP and detecting job changes
 function onPlayerChangedEvent(e) {
+    if (!window["language"]) return;
     if (gameState.player !== null && gameState.player.job !== e.detail.job) {
         onJobChange(e.detail.job);
-        setCurrentRole();
+        setCurrentRole(e.detail.job);
     }
     gameState.playerPrevious = gameState.playerPrevious
         ? gameState.player
@@ -2812,7 +2924,7 @@ function onPlayerChangedEvent(e) {
     gameState.player = e.detail;
     if (gameState.currentrole === null) {
         onJobChange(e.detail.job);
-        setCurrentRole();
+        setCurrentRole(e.detail.job);
     }
     if (gameState.partyList.length === 0) {
         setAndCheckTickers();
@@ -2861,11 +2973,29 @@ function checkAndSetZoneInfo(zoneId) {
     }
 }
 
+function addPlayerPet(pet) {
+    gameState.playerPets.push({
+        name: pet.name,
+        id: pet.id,
+        ownerId: pet.ownerId,
+    });
+}
+
 /* exported handleAddNewCombatant */
 function handleAddNewCombatant(parameters) {
-    if (gameState.partyList.filter((x) => x.id == parameters.id).length == 0)
+    if (
+        gameState.partyList.filter((x) => x.id == parameters.ownerId).length > 0
+    ) {
+        addPlayerPet({
+            name: parameters.name,
+            id: parameters.id,
+            ownerId: parameters.ownerId,
+        });
+    }
+    if (gameState.partyList.filter((x) => x.id == parameters.id).length == 0) {
         return;
-    let job = jobList.find((x) => x.name === parameters.job.toUpperCase());
+    }
+    let job = jobList.find((x) => x.id === parseInt(parameters.job, 16));
     let player = gameState.partyList.find((x) => x.id == parameters.id);
     let reload = false;
     if (player.job != job) {
@@ -2876,15 +3006,23 @@ function handleAddNewCombatant(parameters) {
             job,
         );
     }
-    if (player.level != parseInt(parameters.level)) {
-        player.level = parseInt(parameters.level);
+    if (player.level != parseInt(parameters.level, 16)) {
+        player.level = parseInt(parameters.level, 16);
         reload = true;
         toLog(
             "[handleAddNewCombatant] Party Member Level Changed, cooldowns will be reloaded",
-            parseInt(parameters.level),
+            parseInt(parameters.level, 16),
         );
     }
     if (reload) reloadCooldownModules();
+}
+
+/* exported handleRemoveCombatant */
+function handleRemoveCombatant(parameters) {
+    let filter = gameState.playerPets.filter((x) => x.id == parameters.id);
+    if (filter.length == 1) {
+        gameState.playerPets.splice(gameState.playerPets.indexOf(filter[0]), 1);
+    }
 }
 
 // When user uses /countdown or /cd
@@ -3167,6 +3305,21 @@ function handleSkill(parameters) {
             );
         }
         if (!ability.enabled) continue;
+        if (Object.prototype.hasOwnProperty.call(ability, "extra")) {
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    ability.extra,
+                    "is_trait_enhanced",
+                )
+            ) {
+                if (
+                    gameState.partyList[playerIndex].level ==
+                    ability.extra.is_trait_enhanced[0]
+                ) {
+                    ability.cooldown = ability.extra.is_trait_enhanced[1];
+                }
+            }
+        }
         if (ability.name === "Shoha" && byYou) {
             adjustJobStacks(0, gameState.stats.maxStacks);
         }
@@ -3332,6 +3485,7 @@ function handleGainEffect(parameters) {
     let playerIndex = gameState.partyList.findIndex(
         (x) => x.name === parameters.player,
     );
+
     let ability = undefined;
 
     let mergedAbilityList = abilityList.concat(
@@ -3354,6 +3508,21 @@ function handleGainEffect(parameters) {
             );
         }
         if (!ability.enabled) continue;
+        if (Object.prototype.hasOwnProperty.call(ability, "extra")) {
+            if (
+                Object.prototype.hasOwnProperty.call(
+                    ability.extra,
+                    "is_trait_enhanced",
+                )
+            ) {
+                if (
+                    gameState.partyList[playerIndex].level ==
+                    ability.extra.is_trait_enhanced[0]
+                ) {
+                    ability.cooldown = ability.extra.is_trait_enhanced[1];
+                }
+            }
+        }
         if (ability.type === "RaidBuff") {
             if (
                 ability.name === "Standard Step" ||
@@ -3362,6 +3531,18 @@ function handleGainEffect(parameters) {
             )
                 continue;
             if (Object.prototype.hasOwnProperty.call(ability, "extra")) {
+                if (ability.extra.isPetAbility) {
+                    let pet = gameState.playerPets.find(
+                        // This might change
+                        (x) => x.id == parameters.playerId,
+                    );
+                    if (pet) {
+                        playerIndex = gameState.partyList.findIndex(
+                            (x) => x.id == pet.ownerId,
+                        );
+                        startAbilityIconTimers(playerIndex, ability, true);
+                    }
+                }
                 if (ability.extra.is_card) continue;
                 if (ability.extra.is_song) {
                     let abilityHolder = mergedAbilityList.find(
@@ -3414,6 +3595,7 @@ function handleGainEffect(parameters) {
             (ability.type === "DoT" && byYou) ||
             (ability.type === "Buff" && byYou)
         ) {
+            ability.duration = parameters.duration;
             if (Object.prototype.hasOwnProperty.call(ability, "extra")) {
                 if (ability.extra.shares_cooldown) {
                     startAbilityBarTimer(

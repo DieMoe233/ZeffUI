@@ -36,6 +36,7 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     checkAndInitializeSetting(settings, "general", {});
     checkAndInitializeSetting(settings.general, "usewebtts", false);
     checkAndInitializeSetting(settings.general, "ttsearly", 5);
+    checkAndInitializeSetting(settings.general, "preventdoubletts", true);
     checkAndInitializeSetting(settings.general, "usehdicons", false);
     checkAndInitializeSetting(settings.general, "customcss", "");
 
@@ -57,9 +58,9 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
 		// Tanks
 			"PLD", "GLA", "WAR", "MRD", "DRK", "GNB",
 			// Healers
-			"WHM", "CNJ", "SCH", "AST",
+			"WHM", "CNJ", "SCH", "AST", "SGE",
 			// Melee DPS
-			"MNK", "PGL", "DRG", "LNC", "NIN", "ROG", "SAM",
+			"MNK", "PGL", "DRG", "LNC", "NIN", "ROG", "SAM", "RPR", 
 			// Physical Ranged DPS
 			"BRD", "ARC", "MCH", "DNC",
 			// Caster DPS
@@ -88,6 +89,12 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
         "other",
         settings.partyorder,
     );
+
+    checkAndInsertMissingJobs(settings.partyorder);
+    checkAndInsertMissingJobs(settings.rolepartyorder.tank);
+    checkAndInsertMissingJobs(settings.rolepartyorder.healer);
+    checkAndInsertMissingJobs(settings.rolepartyorder.dps);
+    checkAndInsertMissingJobs(settings.rolepartyorder.other);
 
     // HEALTHBAR SETTINGS
     checkAndInitializeSetting(settings, "healthbar", {});
@@ -191,7 +198,8 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     checkAndInitializeSetting(settings.hotticker, "specificjobs", [
         "AST",
         "SCH",
-        "MKN",
+        "SGE",
+        "MNK",
         "WHM",
     ]);
 
@@ -414,4 +422,17 @@ async function checkAndInitializeDefaultSettingsObject(settings, lang = null) {
     );
 
     return settings;
+}
+
+function checkAndInsertMissingJobs(settingsObject) {
+    // Check for missing jobs
+    if (!settingsObject.includes("SGE")) {
+        // Add missing SGE job
+        settingsObject.splice(settingsObject.indexOf("AST") + 1, 0, "SGE");
+    }
+
+    if (!settingsObject.includes("RPR")) {
+        // Add missing RPR job
+        settingsObject.splice(settingsObject.indexOf("SAM") + 1, 0, "RPR");
+    }
 }

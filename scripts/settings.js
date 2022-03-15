@@ -16,9 +16,9 @@ var defaultJobOrder = [
 	// Tanks
 	"PLD", "GLA", "WAR", "MRD", "DRK", "GNB",
 	// Healers
-	"WHM", "CNJ", "SCH", "AST",
+	"WHM", "CNJ", "SCH", "AST", "SGE",
 	// Melee DPS
-	"MNK", "PGL", "DRG", "LNC", "NIN", "ROG", "SAM",
+	"MNK", "PGL", "DRG", "LNC", "NIN", "ROG", "SAM", "RPR",
 	// Physical Ranged DPS
 	"BRD", "ARC", "MCH", "DNC",
 	// Caster DPS
@@ -1253,6 +1253,10 @@ async function loadSettings() {
                 $("#useWebTTS").prop("checked", settings.general.usewebtts);
                 $("#useHDIcons").prop("checked", settings.general.usehdicons);
                 $("#ttsEarly").val(settings.general.ttsearly);
+                $("#preventDoubleTTS").prop(
+                    "checked",
+                    settings.general.preventdoubletts,
+                );
 
                 $("#customcss").val(settings.general.customcss);
 
@@ -1915,6 +1919,7 @@ function saveAllSettings() {
         general: {
             usewebtts: $("#useWebTTS").is(":checked"),
             ttsearly: $("#ttsEarly").val(),
+            preventdoubletts: $("#preventDoubleTTS").is(":checked"),
             usehdicons: $("#useHDIcons").is(":checked"),
             customcss: $("#customcss").val(),
         },
