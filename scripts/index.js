@@ -88,7 +88,6 @@ const UPDATE_INTERVAL = 10;
 // Cactbot Events: https://github.com/quisquous/cactbot/blob/8615b69424360f69892bf81907d9cbdf3e752592/plugin/CactbotEventSource/CactbotEventSource.cs
 addOverlayListener("onPlayerChangedEvent", (e) => onPlayerChangedEvent(e));
 addOverlayListener("onLogEvent", (e) => onLogEvent(e));
-addOverlayListener("onPartyWipe", () => onPartyWipe());
 addOverlayListener("onInCombatChangedEvent", (e) => onInCombatChangedEvent(e));
 addOverlayListener("ChangeZone", (e) => onChangeZone(e));
 addOverlayListener("PartyChanged", (e) => onPartyChanged(e));
@@ -3032,6 +3031,14 @@ function handleCountdownTimer(parameters) {
     startBarTimer(parameters.seconds, "timer-bar", true);
 }
 
+// When user cancels active countdown
+/* exported stopCountdownTimer */
+function stopCountdownTimer() {
+    if (!currentSettings.timerbar.enabled) return;
+    clearInterval(activeElements.countdowns.get(`timer-bar`));
+    stopBarTimer("timer-bar", true);
+}
+
 // Whenever any DoT/HoT ticks
 /* exported handleEffectTick */
 function handleEffectTick(parameters) {
@@ -3313,7 +3320,7 @@ function handleSkill(parameters) {
                 )
             ) {
                 if (
-                    gameState.partyList[playerIndex].level ==
+                    gameState.partyList[playerIndex].level >=
                     ability.extra.is_trait_enhanced[0]
                 ) {
                     ability.cooldown = ability.extra.is_trait_enhanced[1];
@@ -3516,7 +3523,7 @@ function handleGainEffect(parameters) {
                 )
             ) {
                 if (
-                    gameState.partyList[playerIndex].level ==
+                    gameState.partyList[playerIndex].level >=
                     ability.extra.is_trait_enhanced[0]
                 ) {
                     ability.cooldown = ability.extra.is_trait_enhanced[1];
@@ -3631,7 +3638,7 @@ function handleGainEffect(parameters) {
 function handleLoseEffect(parameters) {
     if (gameState.player === null) return;
     //let byYou = (parameters.player === currentPlayer.name);
-    //let onYou = (parameters.target === currentPlayer.name);
+    let onYou = parameters.target === gameState.player.name;
     let playerIndex = gameState.partyList.findIndex(
         (x) => x.name === parameters.player,
     );
@@ -3646,6 +3653,7 @@ function handleLoseEffect(parameters) {
     )) {
         if (ability.name == "Standard Step") return;
         if (ability.name == "Technical Step") return;
+        if (ability.type == "RaidBuff" && !onYou) return;
         let selectorProperties = getSelectorProperties(ability.type);
         let barSelector = selectorProperties.id;
         let abilitySelector = `${barSelector}-${playerIndex}-${ability.id}`;
